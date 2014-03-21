@@ -95,7 +95,14 @@ mini_vsnprintf(char *buffer, unsigned int buffer_len, char *fmt, va_list va)
 
 		/* Copy to buffer */
 		for (i = 0; i < len; i++)
+		{
+			/* If encounter '\n', then treated as "\r\n"
+			 * for real new line.*/
+			if ( s[i] == '\n' )
+				*(pbuffer++) = '\r';
+
 			*(pbuffer++) = s[i];
+		}
 		*(pbuffer) = '\0';
 
 		return len;
