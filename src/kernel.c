@@ -20,6 +20,7 @@
 #include "romdev.h"
 #include "event-monitor.h"
 #include "romfs.h"
+#include "mini-printf.h"
 
 #define MAX_CMDNAME 19
 #define MAX_ARGC 19
@@ -714,8 +715,8 @@ void show_cat( int argc, char *argv[] )
 {
 	char *invaild_cmd_msg = "The usage of cat: cat <filename>.\r\n";
 	char cat_buffer[ CAT_BUF_LEN + 1 ];		// 1 for null character.
-	char cout[2] = { '\0', '\0' };
-	int readfd, len_read, pos;
+	char output_buffer[ CAT_BUF_LEN + 8 ];
+	int readfd, len_read;
 
 	// Handle invaild command
 	if ( argc == 1 || argc > 2 )
@@ -738,21 +739,8 @@ void show_cat( int argc, char *argv[] )
 		// Append a null character
 		cat_buffer[ len_read ] = '\0';
 		// Flush the buffer
-		pos = 0;
-		while ( pos != len_read )
-		{
-			if ( cat_buffer[pos] == '\n' )
-			{
-				write( fdout, "\n\r", 3 );
-			}
-			else
-			{
-				cout[0] = cat_buffer[pos];
-				write( fdout, cout, 2 );
-			}
-
-			++pos;
-		}
+		mini_snprintf( output_buffer, CAT_BUF_LEN + 7, "%s", cat_buffer );
+		write( fdout, output_buffer, strlen( output_buffer + 1 ) );
 	}	// end while( len_read )
 
 	// End of line
