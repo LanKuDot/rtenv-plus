@@ -714,7 +714,8 @@ void show_cat( int argc, char *argv[] )
 {
 	char *invaild_cmd_msg = "The usage of cat: cat <filename>.\r\n";
 	char cat_buffer[ CAT_BUF_LEN + 1 ];		// 1 for null character.
-	int readfd, len_read;
+	char cout[2] = { '\0', '\0' };
+	int readfd, len_read, pos;
 
 	// Handle invaild command
 	if ( argc == 1 || argc > 2 )
@@ -737,7 +738,21 @@ void show_cat( int argc, char *argv[] )
 		// Append a null character
 		cat_buffer[ len_read ] = '\0';
 		// Flush the buffer
-		write( fdout, cat_buffer, strlen( cat_buffer ) + 1 );
+		pos = 0;
+		while ( pos != len_read )
+		{
+			if ( cat_buffer[pos] == '\n' )
+			{
+				write( fdout, "\n\r", 3 );
+			}
+			else
+			{
+				cout[0] = cat_buffer[pos];
+				write( fdout, cout, 2 );
+			}
+
+			++pos;
+		}
 	}	// end while( len_read )
 
 	// End of line
