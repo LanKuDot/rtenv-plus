@@ -31,6 +31,8 @@
 
 #define FILE_EVENT_IS_READ(event) ((event) % 2 == 0)
 
+#define FILE_LIST_LIMIT	32
+
 struct file_request {
     struct task_control_block *task;
     char *buf;
