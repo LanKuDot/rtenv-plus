@@ -740,7 +740,7 @@ void show_cat( int argc, char *argv[] )
 		cat_buffer[ len_read ] = '\0';
 		// Flush the buffer
 		mini_snprintf( output_buffer, CAT_BUF_LEN + 7, "%s", cat_buffer );
-		write( fdout, output_buffer, strlen( output_buffer + 1 ) );
+		write( fdout, output_buffer, strlen( output_buffer )+1 );
 	}	// end while( len_read )
 
 	// End of line
