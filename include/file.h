@@ -61,6 +61,7 @@ struct simple_file_entry {
 
 int mkfile(const char *pathname, int mode, int dev);
 int open(const char *pathname, int flags);
+int list_files( const char *pathname, struct simple_file_entry *list );
 
 int file_read(struct file *file, struct file_request *request,
               struct event_monitor *monitor);

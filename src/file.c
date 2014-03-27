@@ -53,6 +53,40 @@ int open(const char *pathname, int flags)
 	return fd;
 }
 
+int list_files( const char *pathname, struct simple_file_entry *list )
+{
+	int cmd = PATH_CMD_LIST;
+	unsigned int replyfd = getpid() + 3;
+	size_t plen = strlen( pathname ) + 1;
+	int num_of_entries = 0;
+	char buf[ 4 + 4 + 4 + PATH_MAX ];	/* cmd | replyfd | plen | pathname */
+	int pos = 0;
+	int i;
+
+	path_write_data( buf, &cmd, 4, pos );
+	path_write_data( buf, &replyfd, 4, pos );
+	path_write_data( buf, &plen, 4, pos );
+	path_write_data( buf, pathname, plen, pos );
+
+	/* IPC: send PATH_CMD_LIST to pathserver() */
+	write( PATHSERVER_FD, buf, pos );
+
+	/* IPC: recieve the result from pathserver() or romfs_server(). */
+	read( replyfd, &num_of_entries, 4 );
+
+	if ( num_of_entries > 0 )
+	{
+		i = 0;
+		while( i != num_of_entries )
+		{
+			read( replyfd, &list[i], sizeof( struct simple_file_entry ) );
+			++i;
+		}
+	}
+
+	return num_of_entries;
+}
+
 int file_release(struct event_monitor *monitor, int event,
                   struct task_control_block *task, void *data)
 {
