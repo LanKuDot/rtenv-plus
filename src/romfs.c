@@ -64,6 +64,36 @@ int romfs_open(int device, char *path, struct romfs_entry *entry)
     return romfs_open_recur(device, path, 0, entry);
 }
 
+int romfs_listFile( int device, char *path, struct romfs_entry *entry, struct simple_file_entry *list )
+{
+	int num_of_entries = 0;
+
+	lseek( device, 0, SEEK_SET );
+	read( device, entry, sizeof( *entry ) );
+
+	if ( entry -> isdir )
+	{
+        /* Iterate through children */
+        int pos = sizeof( *entry );
+        while ( pos )
+		{
+            /* Get entry */
+            lseek( device, pos, SEEK_SET );
+            read( device, entry, sizeof(*entry) );
+
+			list[ num_of_entries ].isdir = entry -> isdir;
+			memcpy( list[ num_of_entries ].name, (char *)entry -> name, strlen( (char *)entry -> name ) + 1 );
+
+			++num_of_entries;
+
+            /* Next entry */
+            pos = entry->next;
+        }
+	}
+
+	return num_of_entries;
+}
+
 void romfs_server()
 {
     struct romfs_file files[ROMFS_FILE_LIMIT];
