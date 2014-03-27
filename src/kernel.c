@@ -54,6 +54,7 @@ void show_man_page(int argc, char *argv[]);
 void show_history(int argc, char *argv[]);
 void show_xxd(int argc, char *argv[]);
 void show_cat( int argc, char *argv[] );
+void show_ls( int argc, char *argv[] );
 
 /* Enumeration for command types. */
 enum {
@@ -65,6 +66,7 @@ enum {
 	CMD_PS,
 	CMD_XXD,
 	CMD_CAT,
+	CMD_LS,
 	CMD_COUNT
 } CMD_TYPE;
 /* Structure for command handler. */
@@ -81,7 +83,8 @@ const hcmd_entry cmd_data[CMD_COUNT] = {
 	[CMD_MAN] = {.cmd = "man", .func = show_man_page, .description = "Manual pager."},
 	[CMD_PS] = {.cmd = "ps", .func = show_task_info, .description = "List all the processes."},
 	[CMD_XXD] = {.cmd = "xxd", .func = show_xxd, .description = "Make a hexdump."},
-	[CMD_CAT] = {.cmd= "cat", .func = show_cat, .description = "Display the content of the file."}
+	[CMD_CAT] = {.cmd= "cat", .func = show_cat, .description = "Display the content of the file."},
+	[CMD_LS] = {.cmd = "ls", .func = show_ls, .description = "List all directories and files in current directory." }
 };
 
 /* Structure for environment variables. */
@@ -746,6 +749,49 @@ void show_cat( int argc, char *argv[] )
 	// End of line
 	write( fdout, next_line, 3 );
 }
+
+void show_ls( int argc, char *argv[] )
+{
+	char *invaild_cmd_msg = "ls: Usage: ls <directory>.\r\n";
+	char *not_found_msg = "ls: The directory is not found.\r\n";
+	struct simple_file_entry list[FILE_LIST_LIMIT];
+	int num_of_entries, i;
+
+	/* Must specified the directory ( or mount point ) */
+	if ( argc == 1 )
+	{
+		write( fdout, invaild_cmd_msg, strlen( invaild_cmd_msg ) + 1 );
+		return;
+	}
+	else
+	{
+		num_of_entries = list_files( argv[1], list );
+
+		/* The directory ( or mount point ) is not found. */
+		if ( num_of_entries == -1 )
+		{
+			write( fdout, not_found_msg, strlen( not_found_msg ) + 1 );
+			return;
+		}
+		/* If there is no file existing, output a new line. */
+		else if ( num_of_entries == 0 )
+		{
+			write( fdout, "\r\n", 3 );
+		}
+		/* List files */
+		else
+		{
+			i = -1;
+			while( ++i != num_of_entries )
+			{
+				write( fdout, (char *)list[i].name, strlen( (char *)list[i].name ) + 1 );
+				write( fdout, "\r\n", 3 );
+			}
+		}	// end of if-else( num_of_entries )
+	}	// end of if-else( argc )
+
+	return;
+}	// end of show_ls
 
 void first()
 {
