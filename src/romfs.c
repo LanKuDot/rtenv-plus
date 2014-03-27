@@ -112,6 +112,7 @@ void romfs_server()
     int data_start;
     int data_end;
     char data[REGFILE_BUF];
+	struct simple_file_entry list[ FILE_LIST_LIMIT ];
 
     path_register_fs(ROMFS_TYPE);
 
@@ -145,6 +146,28 @@ void romfs_server()
                     /* Response */
 	                write(from, &status, sizeof(status));
 	                break;
+
+				case FS_CMD_LIST:
+					device = request.device;
+					from = request.from;
+					pos = request.pos;
+					size = romfs_listFile( device, request.path + pos, &entry, list );
+
+					/* Response */
+					write( from, &size, 4 );
+
+					if ( size > 0 )
+					{
+						i = 0;
+						while ( i < size )
+						{
+							write( from, &list[i], sizeof( struct simple_file_entry ) );
+							++i;
+						}
+					}
+
+					break;
+
 	            case FS_CMD_READ:
 	                from = request.from;
 	                target = request.target;
